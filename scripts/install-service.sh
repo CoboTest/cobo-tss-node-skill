@@ -35,7 +35,7 @@ Wants=network-online.target
 [Service]
 Type=simple
 WorkingDirectory=$DIR
-ExecStart=$BIN start $START_FLAG --key-file $KEYFILE --config $CONFIG --db db/secrets.db
+ExecStart=$BIN start $START_FLAG --key-file $KEYFILE --config $CONFIG --db $DIR/db/secrets.db
 Restart=on-failure
 RestartSec=10
 StandardOutput=journal
