@@ -1,0 +1,5 @@
+.password
+db/
+logs/
+recovery/
+*.tar.gz
