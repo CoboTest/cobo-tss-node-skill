@@ -79,6 +79,11 @@ mkdir -p "$DIR"/{configs,db,logs,recovery}
 cp "$BINARY" "$DIR/cobo-tss-node"
 chmod 755 "$DIR/cobo-tss-node"
 
+# macOS: remove quarantine flag to avoid Gatekeeper blocking unsigned binary
+if [[ "$OS" == "darwin" ]]; then
+  xattr -d com.apple.quarantine "$DIR/cobo-tss-node" 2>/dev/null || true
+fi
+
 # Save environment marker
 echo "$ENV" > "$DIR/.env"
 
