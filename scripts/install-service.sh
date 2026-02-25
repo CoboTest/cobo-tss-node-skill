@@ -45,7 +45,7 @@ StandardError=journal
 NoNewPrivileges=true
 ProtectSystem=strict
 ProtectHome=read-only
-ReadWritePaths=$DIR/db $DIR/logs $DIR/recovery
+ReadWritePaths=$DIR/db $DIR/logs $DIR/recovery $DIR/configs
 PrivateTmp=true
 
 [Install]
@@ -91,7 +91,7 @@ EOF
         <string>--config</string>
         <string>$CONFIG</string>
         <string>--db</string>
-        <string>db/secrets.db</string>
+        <string>$DIR/db/secrets.db</string>
     </array>
     <key>WorkingDirectory</key>
     <string>$DIR</string>
@@ -112,13 +112,16 @@ EOF
 </plist>
 EOF
 
-    echo "✅ LaunchAgent installed: $PLIST_FILE"
+    # Auto-load the agent
+    launchctl bootstrap "gui/$(id -u)" "$PLIST_FILE" 2>/dev/null || true
+
+    echo "✅ LaunchAgent installed and loaded: $PLIST_FILE"
     echo "   Environment: $ENV"
     echo "   Label: $PLIST_LABEL"
     echo ""
     echo "Commands:"
-    echo "  launchctl load $PLIST_FILE"
-    echo "  launchctl unload $PLIST_FILE"
+    echo "  launchctl kickstart gui/$(id -u)/$PLIST_LABEL"
+    echo "  launchctl bootout gui/$(id -u)/$PLIST_LABEL"
     echo "  launchctl list | grep cobo"
     echo "  tail -f $LOG_DIR/launchd-stdout.log"
     ;;

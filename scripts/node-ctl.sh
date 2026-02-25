@@ -55,7 +55,9 @@ detect_platform() {
 }
 
 PLATFORM=$(detect_platform)
-PLIST_FILE="$HOME/Library/LaunchAgents/${PLIST_LABEL}.plist"
+if [[ "$PLATFORM" == "macos" ]]; then
+  PLIST_FILE="$HOME/Library/LaunchAgents/${PLIST_LABEL}.plist"
+fi
 
 # Service control abstraction
 svc_cmd() {
@@ -74,8 +76,8 @@ svc_cmd() {
       ;;
     macos)
       case "$action" in
-        start)   launchctl load "$PLIST_FILE" 2>/dev/null || launchctl kickstart "gui/$(id -u)/$PLIST_LABEL" ;;
-        stop)    launchctl unload "$PLIST_FILE" 2>/dev/null || launchctl kill SIGTERM "gui/$(id -u)/$PLIST_LABEL" ;;
+        start)   launchctl bootstrap "gui/$(id -u)" "$PLIST_FILE" 2>/dev/null || launchctl kickstart "gui/$(id -u)/$PLIST_LABEL" ;;
+        stop)    launchctl bootout "gui/$(id -u)/$PLIST_LABEL" 2>/dev/null || launchctl kill SIGTERM "gui/$(id -u)/$PLIST_LABEL" ;;
         restart) svc_cmd stop; sleep 2; svc_cmd start ;;
         status)
           if launchctl list 2>/dev/null | grep -q "$PLIST_LABEL"; then
@@ -339,7 +341,7 @@ case "$CMD" in
         echo "✅ Systemd service removed"
         ;;
       macos)
-        launchctl unload "$PLIST_FILE" 2>/dev/null || true
+        launchctl bootout "gui/$(id -u)/$PLIST_LABEL" 2>/dev/null || true
         rm -f "$PLIST_FILE"
         echo "✅ LaunchAgent removed"
         ;;
