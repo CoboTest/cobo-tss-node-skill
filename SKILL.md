@@ -272,6 +272,6 @@ Key sections:
 | "password" prompt on start | Missing `--key-file` | Reinstall service: `install-service.sh linux` |
 | Permission denied on `.password` | Wrong file mode | `chmod 600 ~/.cobo-tss-node/.password` |
 | Init fails | DB already exists | Check with `node-info.sh`; delete `db/secrets.db` only if intentional |
-| WebSocket connection failed | Wrong environment flag | Match `--dev`/`--sandbox`/`--prod` to your Cobo Portal environment |
+| WebSocket connection failed | Wrong environment flag | Match `--dev`/`--prod` to your Cobo Portal environment |
 | Service exits immediately | Port or resource conflict | Check `node-ctl.sh logs` for error details |
 | Migration fails | Version incompatibility | Try `migrate --dry-run` first; contact Cobo support if persistent |
