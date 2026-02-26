@@ -1,7 +1,7 @@
 ---
 name: cobo-tss-node
 description: "Manage a Cobo TSS Node for MPC threshold signing. Use when: setting up a new TSS Node, starting/stopping the node service, checking node status or health, signing for key share checkups, exporting shares for disaster recovery, backing up or updating the node, installing as a systemd or launchd service. NOT for: Cobo WaaS API integration, on-chain transaction building, or wallet UI."
-version: 0.3.0
+version: 0.2.0
 metadata:
   {
     "openclaw":
@@ -35,23 +35,14 @@ Manage a Cobo TSS Node — the client-side MPC signing component for Cobo's co-m
 - Building on-chain transactions directly
 - Managing Cobo Portal (web UI operations)
 
-## Environments
-
-| Environment | Default Directory | Start Flag | Service Name |
-|-------------|-------------------|------------|--------------|
-| `dev` | `~/.cobo-tss-node-dev` | `--dev` | `cobo-tss-node-dev` |
-| `prod` | `~/.cobo-tss-node` | `--prod` | `cobo-tss-node` |
-
-All scripts require `--env <dev|prod>`. Dev and prod can run side-by-side on the same machine with separate data directories, services, and configs.
-
 ## Quick Start
 
 ```bash
-./scripts/install.sh --env dev              # Download binary (dev)
-./scripts/setup-keyfile.sh --env dev        # Create password file
-./scripts/init-node.sh --env dev            # Initialize (outputs Node ID)
-./scripts/install-service.sh linux --env dev  # Install systemd service
-./scripts/node-ctl.sh start --env dev       # Start
+./scripts/install.sh                        # Download binary
+./scripts/setup-keyfile.sh                  # Create password file
+./scripts/init-node.sh                      # Initialize (outputs Node ID)
+./scripts/install-service.sh linux          # Install systemd service
+./scripts/node-ctl.sh start                 # Start
 ```
 
 ## Scripts
@@ -71,24 +62,8 @@ All scripts require `--env <dev|prod>`. Dev and prod can run side-by-side on the
 All post-install operations go through `node-ctl.sh`:
 
 ```bash
-./scripts/node-ctl.sh <command> --env <dev|prod> [--dir DIR]
+./scripts/node-ctl.sh <command> [--dir ~/.cobo-tss-node]
 ```
-
-### Node Info
-
-```bash
-./scripts/node-ctl.sh info --env prod
-```
-
-Displays Node ID and metadata. Equivalent to `cobo-tss-node info`.
-
-### Node Info
-
-```bash
-./scripts/node-ctl.sh info --env <dev|prod>
-```
-
-Displays Node ID and metadata. Equivalent to `cobo-tss-node info`.
 
 ### Service Management
 
@@ -134,11 +109,10 @@ Shows group details: participants, threshold, public key, protocol type.
 ./scripts/node-ctl.sh sign <group-id> [message]
 ```
 
-- ⚠️ **This is NOT an MPC co-signing operation.** It uses the local key share directly to sign a message, verifying that the share exists and is intact.
-- Purpose: prove key share integrity — confirm the share hasn't been corrupted or lost
+- Signs a message using the local key share — proves share integrity without full MPC ceremony
 - If no message given, auto-generates: `checkup-YYYY-MM-DD`
 - **Recommended:** run weekly or after any infrastructure changes
-- This is a local-only operation (no network/WebSocket needed, no MPC ceremony involved)
+- This is a local-only operation (no network/WebSocket needed)
 
 ### Disaster Recovery Export
 
@@ -208,13 +182,13 @@ Removes the systemd/launchd service but **keeps all data** in `~/.cobo-tss-node/
 
 | Task | Frequency | Command |
 |------|-----------|---------|
-| Health check | Daily | `node-ctl.sh health --env prod` |
-| Key share checkup | Weekly | `node-ctl.sh sign --env prod <group-id>` |
-| Backup | Weekly | `node-ctl.sh backup --env prod` |
-| Log review | Weekly | `node-ctl.sh logs --env prod --lines=500` |
-| Export shares | After keygen/reshare | `node-ctl.sh export --env prod <group-ids>` |
-| Update binary | On new release | `node-ctl.sh update --env prod` |
-| Password rotation | Quarterly | `node-ctl.sh change-password --env prod` |
+| Health check | Daily | `node-ctl.sh health` |
+| Key share checkup | Weekly | `node-ctl.sh sign <group-id>` |
+| Backup | Weekly | `node-ctl.sh backup` |
+| Log review | Weekly | `node-ctl.sh logs --lines=500` |
+| Export shares | After keygen/reshare | `node-ctl.sh export <group-ids>` |
+| Update binary | On new release | `node-ctl.sh update` |
+| Password rotation | Quarterly | `node-ctl.sh change-password` |
 
 ## Configuration Reference
 
@@ -233,14 +207,10 @@ Key sections:
 ## Directory Layout
 
 ```
-# Production: ~/.cobo-tss-node/
-# Development: ~/.cobo-tss-node-dev/
-
-~/.cobo-tss-node/                    # (or ~/.cobo-tss-node-dev/)
+~/.cobo-tss-node/
 ├── cobo-tss-node                    # binary
 ├── cobo-tss-node.bak               # previous binary (after update)
 ├── .password                        # key file (chmod 600)
-├── .env                             # environment marker (dev/prod)
 ├── configs/
 │   ├── cobo-tss-node-config.yaml           # active config
 │   └── cobo-tss-node-config.yaml.template  # template reference
@@ -273,6 +243,6 @@ Key sections:
 | "password" prompt on start | Missing `--key-file` | Reinstall service: `install-service.sh linux` |
 | Permission denied on `.password` | Wrong file mode | `chmod 600 ~/.cobo-tss-node/.password` |
 | Init fails | DB already exists | Check with `node-info.sh`; delete `db/secrets.db` only if intentional |
-| WebSocket connection failed | Wrong environment flag | Match `--dev`/`--prod` to your Cobo Portal environment |
+| WebSocket connection failed | Wrong environment flag | Match `--dev`/`--sandbox`/`--prod` to your Cobo Portal environment |
 | Service exits immediately | Port or resource conflict | Check `node-ctl.sh logs` for error details |
 | Migration fails | Version incompatibility | Try `migrate --dry-run` first; contact Cobo support if persistent |
