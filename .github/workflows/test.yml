@@ -8,8 +8,11 @@ on:
 
 jobs:
   unit:
-    name: Unit Tests
-    runs-on: ubuntu-latest
+    name: Unit Tests (${{ matrix.os }})
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -18,18 +21,21 @@ jobs:
       - run: bash tests/run-tests.sh
 
   integration:
-    name: Integration Tests
-    runs-on: ubuntu-latest
+    name: Integration Tests (${{ matrix.os }})
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
           python-version: "3.x"
 
-      - name: Enable systemd user session
+      - name: Enable systemd user session (Linux)
+        if: runner.os == 'Linux'
         run: |
           loginctl enable-linger $(whoami)
-          # Ensure XDG_RUNTIME_DIR is set for systemctl --user
           echo "XDG_RUNTIME_DIR=/run/user/$(id -u)" >> $GITHUB_ENV
 
       - name: Run integration tests
