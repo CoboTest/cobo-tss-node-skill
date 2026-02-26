@@ -675,9 +675,13 @@ echo -e "\n${YELLOW}=== start-node.sh ===${NC}"
 test_start_node_runs() {
   local d="$TEST_DIR/start-ok"
   setup_test_dir "$d"
-  # start-node.sh uses exec, so the mock binary's start loop would hang.
-  # Use timeout to verify it starts, then kill.
-  output=$(timeout 3 bash "$SCRIPT_DIR/start-node.sh" --env "$TEST_ENV" --dir "$d" 2>&1) || true
+  # start-node.sh uses exec (runs forever). Run in background, capture early output, then kill.
+  bash "$SCRIPT_DIR/start-node.sh" --env "$TEST_ENV" --dir "$d" > "$TEST_DIR/start-out.txt" 2>&1 &
+  local pid=$!
+  sleep 2
+  kill "$pid" 2>/dev/null || true
+  wait "$pid" 2>/dev/null || true
+  output=$(cat "$TEST_DIR/start-out.txt")
   if echo "$output" | grep -q "started\|Starting"; then
     log_pass "start-node runs with mock binary"
   else
