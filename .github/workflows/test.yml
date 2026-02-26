@@ -7,21 +7,8 @@ on:
     branches: [main]
 
 jobs:
-  unit:
-    name: Unit Tests (${{ matrix.os }})
-    strategy:
-      matrix:
-        os: [ubuntu-latest, macos-latest]
-    runs-on: ${{ matrix.os }}
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with:
-          python-version: "3.x"
-      - run: bash tests/run-tests.sh
-
-  integration:
-    name: Integration Tests (${{ matrix.os }})
+  test:
+    name: Tests (${{ matrix.os }})
     strategy:
       matrix:
         os: [ubuntu-latest, macos-latest]
@@ -38,5 +25,5 @@ jobs:
           loginctl enable-linger $(whoami)
           echo "XDG_RUNTIME_DIR=/run/user/$(id -u)" >> $GITHUB_ENV
 
-      - name: Run integration tests
-        run: bash tests/run-integration.sh
+      - name: Run tests
+        run: bash tests/run-tests.sh
