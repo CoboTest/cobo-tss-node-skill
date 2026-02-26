@@ -29,6 +29,18 @@ create_mock_systemctl() {
   local bin_dir="$1"
   mkdir -p "$bin_dir"
 
+  # Mock uname to always return Linux (so node-ctl uses systemctl path)
+  cat > "$bin_dir/uname" <<'MOCK'
+#!/usr/bin/env bash
+# Return Linux for -s, pass through other flags to real uname
+for arg in "$@"; do
+  case "$arg" in -s) echo "Linux"; exit 0 ;; esac
+done
+# No -s flag: default
+echo "Linux"
+MOCK
+  chmod 755 "$bin_dir/uname"
+
   cat > "$bin_dir/systemctl" <<'MOCK'
 #!/usr/bin/env bash
 LOG="${MOCK_SYSTEMCTL_LOG:-/dev/null}"
@@ -647,8 +659,60 @@ test_ctl_uninstall_preserves_data() {
   fi
 }
 
+test_ctl_uninstall_macos() {
+  local d="$TEST_DIR/ctl-uninstall-mac"
+  local fake_home="$TEST_DIR/ctl-uninstall-mac-home"
+  local mock_log="$TEST_DIR/mock-svc-calls.log"
+  local mock_bin="$TEST_DIR/mock-bin-macos"
+  setup_test_dir "$d"
+
+  # Create mock with uname returning Darwin
+  mkdir -p "$mock_bin"
+  cat > "$mock_bin/uname" <<'MOCK'
+#!/usr/bin/env bash
+for arg in "$@"; do case "$arg" in -s) echo "Darwin"; exit 0 ;; esac; done
+echo "Darwin"
+MOCK
+  chmod 755 "$mock_bin/uname"
+  cat > "$mock_bin/launchctl" <<'MOCK'
+#!/usr/bin/env bash
+LOG="${MOCK_SYSTEMCTL_LOG:-/dev/null}"
+echo "launchctl $*" >> "$LOG"
+exit 0
+MOCK
+  chmod 755 "$mock_bin/launchctl"
+
+  # Install macos plist
+  mkdir -p "$fake_home/Library/LaunchAgents"
+  HOME="$fake_home" PATH="$mock_bin:$PATH" MOCK_SYSTEMCTL_LOG="$mock_log" \
+    bash "$SCRIPT_DIR/install-service.sh" macos --env "$TEST_ENV" --dir "$d" 2>&1 >/dev/null
+
+  plist=$(find "$fake_home/Library/LaunchAgents/" -name "*.plist" | head -1)
+  if [[ -z "$plist" || ! -f "$plist" ]]; then
+    log_fail "macos uninstall setup" "plist not created"
+    return
+  fi
+
+  # Uninstall
+  > "$mock_log"
+  HOME="$fake_home" PATH="$mock_bin:$PATH" MOCK_SYSTEMCTL_LOG="$mock_log" \
+    bash "$SCRIPT_DIR/node-ctl.sh" uninstall --env "$TEST_ENV" --dir "$d" 2>&1 >/dev/null
+
+  checks=0
+  [[ ! -f "$plist" ]] && checks=$((checks + 1))
+  grep -q "launchctl" "$mock_log" && checks=$((checks + 1))
+  [[ -d "$d/db" ]] && checks=$((checks + 1))
+
+  if [[ "$checks" -eq 3 ]]; then
+    log_pass "macos uninstall removes plist, calls launchctl, keeps data"
+  else
+    log_fail "uninstall macos" "only $checks/3 checks passed"
+  fi
+}
+
 test_ctl_start_stop_restart
 test_ctl_uninstall_linux
+test_ctl_uninstall_macos
 test_ctl_uninstall_preserves_data
 
 ########################################
