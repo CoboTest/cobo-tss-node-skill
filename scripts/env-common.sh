@@ -3,7 +3,7 @@
 # Source this file: source "$(dirname "$0")/env-common.sh"
 
 # Supported environments
-VALID_ENVS=("dev" "prod")
+VALID_ENVS=("dev" "prod" "test")
 
 # Default directory per environment
 env_default_dir() {
@@ -11,7 +11,8 @@ env_default_dir() {
   case "$env" in
     dev)  echo "$HOME/.cobo-tss-node-dev" ;;
     prod) echo "$HOME/.cobo-tss-node" ;;
-    *)    echo "❌ Invalid environment: $env (must be dev or prod)" >&2; exit 1 ;;
+    test) echo "$HOME/.cobo-tss-node-test" ;;
+    *)    echo "❌ Invalid environment: $env (must be dev, prod, or test)" >&2; exit 1 ;;
   esac
 }
 
@@ -21,6 +22,7 @@ env_start_flag() {
   case "$env" in
     dev)  echo "--dev" ;;
     prod) echo "--prod" ;;
+    test) echo "--dev" ;;  # test uses dev API endpoint
     *)    echo "❌ Invalid environment: $env" >&2; exit 1 ;;
   esac
 }
@@ -31,6 +33,7 @@ env_service_name() {
   case "$env" in
     dev)  echo "cobo-tss-node-dev" ;;
     prod) echo "cobo-tss-node" ;;
+    test) echo "cobo-tss-node-test" ;;
     *)    echo "❌ Invalid environment: $env" >&2; exit 1 ;;
   esac
 }
@@ -41,6 +44,7 @@ env_plist_label() {
   case "$env" in
     dev)  echo "com.cobo.tss-node-dev" ;;
     prod) echo "com.cobo.tss-node" ;;
+    test) echo "com.cobo.tss-node-test" ;;
     *)    echo "❌ Invalid environment: $env" >&2; exit 1 ;;
   esac
 }
@@ -63,8 +67,8 @@ parse_env_args() {
 
   # ENV is required
   if [[ -z "$ENV" ]]; then
-    echo "❌ --env is required (dev or prod)"
-    echo "Usage: $0 --env <dev|prod> [--dir DIR] [options]"
+    echo "❌ --env is required (dev, prod, or test)"
+    echo "Usage: $0 --env <dev|prod|test> [--dir DIR] [options]"
     exit 1
   fi
 

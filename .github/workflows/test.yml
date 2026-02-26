@@ -7,16 +7,30 @@ on:
     branches: [main]
 
 jobs:
-  test:
+  unit:
+    name: Unit Tests
     runs-on: ubuntu-latest
-
     steps:
       - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.x"
+      - run: bash tests/run-tests.sh
 
-      - name: Set up Python (for mock binary)
-        uses: actions/setup-python@v5
+  integration:
+    name: Integration Tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
         with:
           python-version: "3.x"
 
-      - name: Run tests
-        run: bash tests/run-tests.sh
+      - name: Enable systemd user session
+        run: |
+          loginctl enable-linger $(whoami)
+          # Ensure XDG_RUNTIME_DIR is set for systemctl --user
+          echo "XDG_RUNTIME_DIR=/run/user/$(id -u)" >> $GITHUB_ENV
+
+      - name: Run integration tests
+        run: bash tests/run-integration.sh
