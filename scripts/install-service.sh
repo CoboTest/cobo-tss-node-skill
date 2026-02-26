@@ -44,8 +44,8 @@ StandardError=journal
 # Security hardening
 NoNewPrivileges=true
 ProtectSystem=strict
-ProtectHome=read-only
-ReadWritePaths=$DIR/db $DIR/logs $DIR/recovery $DIR/configs
+ProtectHome=false
+ReadWritePaths=$DIR/db $DIR/logs $DIR/recovery $DIR/configs $DIR/backups
 PrivateTmp=true
 
 [Install]

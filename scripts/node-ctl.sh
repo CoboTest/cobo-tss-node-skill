@@ -172,7 +172,7 @@ case "$CMD" in
     echo "========================"
     echo "📍 Dir: $DIR"
 
-    STATUS=$(svc_cmd is-active)
+    STATUS=$(svc_cmd is-active || true)
     if [[ "$STATUS" == "active" ]]; then
       echo "✅ Service ($SERVICE_NAME): running"
     else
@@ -323,7 +323,7 @@ case "$CMD" in
     cp "$KEYFILE" "$BACKUP_DIR/.password"
     chmod 600 "$BACKUP_DIR/.password"
 
-    (cd "$BACKUP_DIR" && sha256sum * > SHA256SUMS 2>/dev/null || shasum -a 256 * > SHA256SUMS)
+    (cd "$BACKUP_DIR" && find . -type f ! -name SHA256SUMS -exec sha256sum {} + > SHA256SUMS 2>/dev/null || find . -type f ! -name SHA256SUMS -exec shasum -a 256 {} + > SHA256SUMS)
 
     echo "✅ Backup complete ($ENV):"
     ls -la "$BACKUP_DIR"

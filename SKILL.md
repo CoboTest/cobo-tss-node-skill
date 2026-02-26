@@ -1,7 +1,7 @@
 ---
 name: cobo-tss-node
 description: "Manage a Cobo TSS Node for MPC threshold signing. Use when: setting up a new TSS Node, starting/stopping the node service, checking node status or health, signing for key share checkups, exporting shares for disaster recovery, backing up or updating the node, installing as a systemd or launchd service. NOT for: Cobo WaaS API integration, on-chain transaction building, or wallet UI."
-version: 0.3.0
+version: 0.3.1
 metadata:
   {
     "openclaw":
