@@ -2,16 +2,10 @@
 set -euo pipefail
 
 # Initialize Cobo TSS Node
-# Usage: init-node.sh [--dir DIR]
+# Usage: init-node.sh --env <dev|prod> [--dir DIR]
 
-DIR="$HOME/.cobo-tss-node"
-
-while [[ $# -gt 0 ]]; do
-  case "$1" in
-    --dir) DIR="$2"; shift 2 ;;
-    *) echo "Unknown arg: $1"; exit 1 ;;
-  esac
-done
+source "$(dirname "$0")/env-common.sh"
+parse_env_args "$@"
 
 BIN="$DIR/cobo-tss-node"
 KEYFILE="$DIR/.password"
@@ -22,11 +16,11 @@ CONFIG="$DIR/configs/cobo-tss-node-config.yaml"
 
 if [[ -f "$DIR/db/secrets.db" ]]; then
   echo "⚠️  Database already exists: $DIR/db/secrets.db"
-  echo "   Node may already be initialized. Use node-info.sh to check."
+  echo "   Node may already be initialized. Use node-info.sh --env $ENV to check."
   exit 1
 fi
 
-echo "🔧 Initializing TSS Node..."
+echo "🔧 Initializing TSS Node ($ENV)..."
 cd "$DIR"
 "$BIN" init \
   --key-file "$KEYFILE" \
@@ -34,7 +28,7 @@ cd "$DIR"
   --db "db/secrets.db"
 
 echo ""
-echo "✅ TSS Node initialized!"
+echo "✅ TSS Node initialized! (env: $ENV, dir: $DIR)"
 echo ""
 echo "📋 Node info:"
 "$BIN" info \

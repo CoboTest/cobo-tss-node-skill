@@ -2,15 +2,18 @@
 set -euo pipefail
 
 # Show Cobo TSS Node info
-# Usage: node-info.sh [--dir DIR] [--group [GROUP_ID]]
+# Usage: node-info.sh --env <dev|prod> [--dir DIR] [--group [GROUP_ID]]
 
-DIR="$HOME/.cobo-tss-node"
+source "$(dirname "$0")/env-common.sh"
+
 GROUP=""
 GROUP_ID=""
 
+# Manual parse to handle --group with optional value
 while [[ $# -gt 0 ]]; do
   case "$1" in
-    --dir)   DIR="$2"; shift 2 ;;
+    --env) ENV="$2"; shift 2 ;;
+    --dir) DIR="$2"; shift 2 ;;
     --group)
       GROUP="yes"
       if [[ $# -gt 1 && ! "$2" =~ ^-- ]]; then
@@ -22,6 +25,12 @@ while [[ $# -gt 0 ]]; do
     *) echo "Unknown arg: $1"; exit 1 ;;
   esac
 done
+
+if [[ -z "$ENV" ]]; then
+  echo "❌ --env is required (dev or prod)"
+  exit 1
+fi
+[[ -z "$DIR" ]] && DIR=$(env_default_dir "$ENV")
 
 BIN="$DIR/cobo-tss-node"
 KEYFILE="$DIR/.password"
