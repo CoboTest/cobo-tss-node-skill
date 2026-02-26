@@ -134,10 +134,11 @@ Shows group details: participants, threshold, public key, protocol type.
 ./scripts/node-ctl.sh sign <group-id> [message]
 ```
 
-- Signs a message using the local key share — proves share integrity without full MPC ceremony
+- ⚠️ **This is NOT an MPC co-signing operation.** It uses the local key share directly to sign a message, verifying that the share exists and is intact.
+- Purpose: prove key share integrity — confirm the share hasn't been corrupted or lost
 - If no message given, auto-generates: `checkup-YYYY-MM-DD`
 - **Recommended:** run weekly or after any infrastructure changes
-- This is a local-only operation (no network/WebSocket needed)
+- This is a local-only operation (no network/WebSocket needed, no MPC ceremony involved)
 
 ### Disaster Recovery Export
 

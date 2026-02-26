@@ -216,7 +216,8 @@ case "$CMD" in
     MESSAGE="${REMAINING[1]:-}"
     [[ -z "$GROUP_ID" ]] && echo "Usage: node-ctl.sh sign --env <dev|prod> <group-id> [message]" && exit 1
     [[ -z "$MESSAGE" ]] && MESSAGE="checkup-$(date +%Y-%m-%d)"
-    echo "✍️  Signing message for group $GROUP_ID ($ENV)..."
+    echo "✍️  Key share checkup for group $GROUP_ID ($ENV)..."
+    echo "   (local sign to verify share integrity — not an MPC co-sign)"
     cd "$DIR"
     $BIN sign --key-file "$KEYFILE" --db "$DB" --group-id "$GROUP_ID" --message "$MESSAGE"
     ;;
@@ -372,7 +373,7 @@ Service Management:
 
 Operations:
   health              Full health check
-  sign <gid> [msg]    Sign message for key share checkup
+  sign <gid> [msg]    Verify key share integrity (signs locally, not MPC)
   export <gid,...>    Export key shares for disaster recovery
   groups              List all MPC groups
   group <gid>         Show group detail
