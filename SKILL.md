@@ -82,14 +82,6 @@ All post-install operations go through `node-ctl.sh`:
 
 Displays Node ID and metadata. Equivalent to `cobo-tss-node info`.
 
-### Node Info
-
-```bash
-./scripts/node-ctl.sh info --env <dev|prod>
-```
-
-Displays Node ID and metadata. Equivalent to `cobo-tss-node info`.
-
 ### Service Management
 
 | Command | Description |

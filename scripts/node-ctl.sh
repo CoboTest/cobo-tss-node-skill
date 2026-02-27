@@ -367,7 +367,11 @@ case "$CMD" in
     cp "$KEYFILE" "$BACKUP_DIR/.password"
     chmod 600 "$BACKUP_DIR/.password"
 
-    (cd "$BACKUP_DIR" && find . -type f ! -name SHA256SUMS -exec sha256sum {} + > SHA256SUMS 2>/dev/null || find . -type f ! -name SHA256SUMS -exec shasum -a 256 {} + > SHA256SUMS)
+    (cd "$BACKUP_DIR" && if command -v sha256sum &>/dev/null; then
+      find . -type f ! -name SHA256SUMS -exec sha256sum {} + > SHA256SUMS
+    else
+      find . -type f ! -name SHA256SUMS -exec shasum -a 256 {} + > SHA256SUMS
+    fi)
 
     echo "✅ Backup complete ($ENV):"
     ls -la "$BACKUP_DIR"

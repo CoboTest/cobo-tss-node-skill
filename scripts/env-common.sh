@@ -49,6 +49,15 @@ env_plist_label() {
   esac
 }
 
+
+# Portable SHA256 — works on both Linux (sha256sum) and macOS (shasum)
+portable_sha256() {
+  if command -v sha256sum &>/dev/null; then
+    sha256sum "$@"
+  else
+    shasum -a 256 "$@"
+  fi
+}
 # Parse --env and --dir from args, set ENV and DIR
 # Usage: parse_env_args "$@"
 # After calling: use $ENV, $DIR, and remaining args in $EXTRA_ARGS
@@ -77,10 +86,18 @@ parse_env_args() {
     esac
   done
 
-  # ENV is required
+  # ENV is required and must be valid
   if [[ -z "$ENV" ]]; then
-    echo "❌ --env is required (dev, prod, or test)"
-    echo "Usage: $0 --env <dev|prod|test> [--dir DIR] [options]"
+    echo "❌ --env is required (${VALID_ENVS[*]})"
+    echo "Usage: $0 --env <${VALID_ENVS[*]}> [--dir DIR] [options]"
+    exit 1
+  fi
+  local valid=false
+  for e in "${VALID_ENVS[@]}"; do
+    [[ "$e" == "$ENV" ]] && valid=true && break
+  done
+  if [[ "$valid" != "true" ]]; then
+    echo "❌ Invalid environment: $ENV (must be one of: ${VALID_ENVS[*]})"
     exit 1
   fi
 

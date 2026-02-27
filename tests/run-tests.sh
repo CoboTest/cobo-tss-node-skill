@@ -30,12 +30,34 @@ case "$PLATFORM" in
 esac
 echo -e "${YELLOW}Platform: $PLATFORM${NC}"
 
-# Service names for cleanup
 SERVICE_NAME="cobo-tss-node-test"
 PLIST_LABEL="com.cobo.tss-node-test"
 PLIST_FILE="$HOME/Library/LaunchAgents/${PLIST_LABEL}.plist"
 SERVICE_FILE="$HOME/.config/systemd/user/${SERVICE_NAME}.service"
 
+# Pre-flight: abort if test service already exists (avoid clobbering real deployments)
+if [[ "$PLATFORM" == "linux" ]]; then
+  if systemctl --user is-active "$SERVICE_NAME" 2>/dev/null | grep -q "active"; then
+    echo -e "${RED}❌ ABORT: $SERVICE_NAME is already running! Refusing to interfere.${NC}"
+    exit 1
+  fi
+  if [[ -f "$SERVICE_FILE" ]]; then
+    echo -e "${RED}❌ ABORT: $SERVICE_FILE already exists! Refusing to overwrite.${NC}"
+    exit 1
+  fi
+elif [[ "$PLATFORM" == "macos" ]]; then
+  if launchctl list 2>/dev/null | grep -q "$PLIST_LABEL"; then
+    echo -e "${RED}❌ ABORT: $PLIST_LABEL is already loaded! Refusing to interfere.${NC}"
+    exit 1
+  fi
+  if [[ -f "$PLIST_FILE" ]]; then
+    echo -e "${RED}❌ ABORT: $PLIST_FILE already exists! Refusing to overwrite.${NC}"
+    exit 1
+  fi
+fi
+echo -e "${GREEN}✅ No conflicting test service found${NC}"
+
+# Service names for cleanup
 # Cleanup: remove test service + temp dir
 cleanup() {
   echo -e "\n${YELLOW}🧹 Cleaning up...${NC}"

@@ -70,7 +70,7 @@ if curl -fsSL "$CHECKSUM_URL" -o "$TMPDIR/SHA256SUMS" 2>/dev/null; then
   echo "🔒 Verifying checksum..."
   EXPECTED=$(grep "$ASSET_NAME" "$TMPDIR/SHA256SUMS" | awk '{print $1}')
   if [[ -n "$EXPECTED" ]]; then
-    ACTUAL=$(sha256sum "$TMPDIR/$ASSET_NAME" 2>/dev/null | awk '{print $1}' || shasum -a 256 "$TMPDIR/$ASSET_NAME" | awk '{print $1}')
+    ACTUAL=$(portable_sha256 "$TMPDIR/$ASSET_NAME" | awk '{print $1}')
     if [[ "$ACTUAL" == "$EXPECTED" ]]; then
       echo "✅ Checksum verified"
     else

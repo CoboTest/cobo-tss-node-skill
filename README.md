@@ -85,7 +85,7 @@ cd ~/.claude/skills && git clone https://github.com/CoboTest/cobo-tss-node-skill
 
 After cloning, `SKILL.md` provides complete instructions for all operations. Compatible with any agent framework that reads `SKILL.md` for tool discovery.
 
-[![Version](https://img.shields.io/badge/version-0.3.1-blue)](https://github.com/CoboTest/cobo-tss-node-skill/releases) [![License: MIT](https://img.shields.io/badge/license-MIT-green)](LICENSE)
+[![Version](https://img.shields.io/badge/version-0.4.0-blue)](https://github.com/CoboTest/cobo-tss-node-skill/releases) [![License: MIT](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 
 ## Related
 
