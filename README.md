@@ -1,6 +1,10 @@
 # cobo-tss-node-skill
 
+[![Version](https://img.shields.io/badge/version-0.4.0-blue)](https://github.com/CoboTest/cobo-tss-node-skill/releases)
 [![Tests](https://github.com/CoboTest/cobo-tss-node-skill/actions/workflows/test.yml/badge.svg)](https://github.com/CoboTest/cobo-tss-node-skill/actions/workflows/test.yml)
+[![License: MIT](https://img.shields.io/badge/license-MIT-green)](LICENSE)
+[![Platform](https://img.shields.io/badge/platform-linux%20%7C%20macOS-lightgrey)]()
+[![Shell](https://img.shields.io/badge/shell-bash-orange)]()
 
 🔐 AI agent skill for managing a [Cobo TSS Node](https://www.cobo.com/mpc-wallet) — the client-side MPC threshold signing component for Cobo's co-managed custody.
 
@@ -85,7 +89,6 @@ cd ~/.claude/skills && git clone https://github.com/CoboTest/cobo-tss-node-skill
 
 After cloning, `SKILL.md` provides complete instructions for all operations. Compatible with any agent framework that reads `SKILL.md` for tool discovery.
 
-[![Version](https://img.shields.io/badge/version-0.4.0-blue)](https://github.com/CoboTest/cobo-tss-node-skill/releases) [![License: MIT](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 
 ## Related
 
