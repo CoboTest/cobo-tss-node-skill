@@ -59,8 +59,20 @@ EXTRA_ARGS=()
 parse_env_args() {
   while [[ $# -gt 0 ]]; do
     case "$1" in
-      --env) ENV="$2"; shift 2 ;;
-      --dir) DIR="$2"; shift 2 ;;
+      --env)
+        if [[ $# -lt 2 || "$2" == --* ]]; then
+          echo "❌ --env requires a value (dev, prod, or test)"
+          exit 1
+        fi
+        ENV="$2"; shift 2
+        ;;
+      --dir)
+        if [[ $# -lt 2 || "$2" == --* ]]; then
+          echo "❌ --dir requires a value"
+          exit 1
+        fi
+        DIR="$2"; shift 2
+        ;;
       *)     EXTRA_ARGS+=("$1"); shift ;;
     esac
   done

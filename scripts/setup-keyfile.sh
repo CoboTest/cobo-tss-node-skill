@@ -8,13 +8,28 @@ source "$(dirname "$0")/env-common.sh"
 
 PASSWORD=""
 FORCE=""
-parse_env_args "$@"
-for arg in "${EXTRA_ARGS[@]+"${EXTRA_ARGS[@]}"}"; do
-  case "$arg" in
-    --password) PASSWORD="${EXTRA_ARGS[1]}" ;;
-    --force)    FORCE="yes" ;;
+
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    --env)
+      [[ $# -lt 2 || "$2" == --* ]] && echo "❌ --env requires a value" && exit 1
+      ENV="$2"; shift 2 ;;
+    --dir)
+      [[ $# -lt 2 || "$2" == --* ]] && echo "❌ --dir requires a value" && exit 1
+      DIR="$2"; shift 2 ;;
+    --password)
+      [[ $# -lt 2 || "$2" == --* ]] && echo "❌ --password requires a value" && exit 1
+      PASSWORD="$2"; shift 2 ;;
+    --force)    FORCE="yes"; shift ;;
+    *) echo "Unknown arg: $1"; exit 1 ;;
   esac
 done
+
+if [[ -z "${ENV:-}" ]]; then
+  echo "❌ --env is required (dev, prod, or test)"
+  exit 1
+fi
+[[ -z "${DIR:-}" ]] && DIR=$(env_default_dir "$ENV")
 
 KEYFILE="$DIR/.password"
 

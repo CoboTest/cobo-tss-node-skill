@@ -315,18 +315,46 @@ case "$CMD" in
       exit 1
     fi
 
+    # Rollback helper
+    rollback_update() {
+      echo "⚠️  Rolling back to previous binary..."
+      if [[ -f "$BIN.bak" ]]; then
+        cp "$BIN.bak" "$BIN"
+        echo "✅ Rolled back binary"
+        svc_cmd start 2>/dev/null || true
+        sleep 2
+      else
+        echo "❌ No backup binary to roll back to!"
+      fi
+    }
+
     echo "🔧 Running migration..."
     cd "$DIR"
-    $BIN migrate --key-file "$KEYFILE" --db "$DB" 2>&1 || echo "  (no migration needed)"
+    if ! $BIN migrate --key-file "$KEYFILE" --db "$DB" 2>&1; then
+      echo "❌ Migration failed!"
+      rollback_update
+      exit 1
+    fi
 
     echo "🚀 Starting service..."
     svc_cmd start
-    sleep 2
-    svc_cmd status
+    sleep 3
+
+    # Verify service is running
+    SVC_STATUS=$(svc_cmd is-active || true)
+    if [[ "$SVC_STATUS" != "active" ]]; then
+      echo "❌ Service failed to start after update!"
+      svc_cmd stop 2>/dev/null || true
+      rollback_update
+      exit 1
+    fi
 
     NEW_VER=$($BIN version 2>&1 | head -1)
     echo ""
     echo "✅ Updated to $NEW_VER ($ENV)"
+    echo ""
+    echo "🏥 Post-update health check:"
+    svc_cmd status 2>/dev/null || true
     ;;
 
   backup)
