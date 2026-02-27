@@ -390,12 +390,34 @@ test_ctl_no_binary() {
   fi
 }
 
+
+test_ctl_backup_cleanup() {
+  local d="$TEST_DIR/ctl-backup-cleanup"
+  setup_test_dir "$d"
+  # Create 12 fake backup dirs
+  for i in $(seq -w 1 12); do
+    mkdir -p "$d/backups/202601${i}-120000"
+    echo "db" > "$d/backups/202601${i}-120000/secrets.db"
+  done
+  # Run backup with --keep=5
+  bash "$SCRIPT_DIR/node-ctl.sh" backup --env "$TEST_ENV" --dir "$d" --keep=5 2>&1 >/dev/null
+  # Should have 5 remaining (oldest removed) + 1 new = at most 6, cleaned to 5+1=6? 
+  # Actually: 12 existing + 1 new = 13, keep 5 means remove 8
+  remaining=$(find "$d/backups" -mindepth 1 -maxdepth 1 -type d | wc -l | tr -d ' ')
+  if [[ "$remaining" -le 6 ]]; then
+    log_pass "backup --keep=5 cleans old backups ($remaining remaining)"
+  else
+    log_fail "backup cleanup" "$remaining dirs remaining (expected <=6)"
+  fi
+}
+
 test_ctl_sign_auto
 test_ctl_sign_no_group
 test_ctl_export
 test_ctl_backup
 test_ctl_backup_sha_dotfile
 test_ctl_backup_password_perms
+test_ctl_backup_cleanup
 test_ctl_groups
 test_ctl_help
 test_ctl_unknown

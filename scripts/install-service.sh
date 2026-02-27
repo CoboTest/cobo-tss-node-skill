@@ -65,7 +65,15 @@ EOF
     echo "  systemctl --user status $SERVICE_NAME"
     echo "  journalctl --user -u $SERVICE_NAME -f"
     echo ""
-    echo "⚠️  For service to run after logout: loginctl enable-linger $(whoami)"
+    # Check and warn about linger
+    if command -v loginctl &>/dev/null; then
+      if loginctl show-user "$(whoami)" 2>/dev/null | grep -q "Linger=yes"; then
+        echo "✅ Linger enabled — service will survive logout"
+      else
+        echo "⚠️  Linger NOT enabled — service will stop on logout!"
+        echo "   Fix: loginctl enable-linger $(whoami)"
+      fi
+    fi
     ;;
 
   macos)

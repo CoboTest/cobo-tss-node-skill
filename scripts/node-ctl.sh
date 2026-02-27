@@ -189,7 +189,14 @@ case "$CMD" in
     fi
 
     if [[ -f "$CONFIG" ]]; then
-      echo "✅ Config: $CONFIG"
+      # Basic YAML validation
+      if python3 -c "import yaml; yaml.safe_load(open('$CONFIG'))" 2>/dev/null; then
+        echo "✅ Config: $CONFIG (valid YAML)"
+      elif python3 -c "import json,sys; open('$CONFIG').read()" 2>/dev/null; then
+        echo "⚠️  Config: $CONFIG (exists, YAML validation unavailable)"
+      else
+        echo "⚠️  Config: $CONFIG (exists, cannot validate)"
+      fi
     else
       echo "❌ Config: not found"
     fi
@@ -203,6 +210,15 @@ case "$CMD" in
 
     DISK_AVAIL=$(df -h "$DIR" | awk 'NR==2{print $4}')
     echo "💾 Disk available: $DISK_AVAIL"
+
+    # Check linger (Linux only)
+    if [[ "$PLATFORM" == "linux" ]] && command -v loginctl &>/dev/null; then
+      if loginctl show-user "$(whoami)" 2>/dev/null | grep -q "Linger=yes"; then
+        echo "✅ Linger: enabled"
+      else
+        echo "⚠️  Linger: NOT enabled (service stops on logout)"
+      fi
+    fi
 
     echo ""
     echo "📋 Node Info:"
@@ -329,6 +345,23 @@ case "$CMD" in
     ls -la "$BACKUP_DIR"
     echo ""
     echo "⚠️  Store this backup securely (contains encrypted keys + password)"
+
+    # Auto-cleanup old backups (keep last 10 by default)
+    KEEP=10
+    for arg in "${REMAINING[@]+"${REMAINING[@]}"}"; do
+      case "$arg" in
+        --keep=*) KEEP="${arg#--keep=}" ;;
+      esac
+    done
+    BACKUP_COUNT=$(find "$DIR/backups" -mindepth 1 -maxdepth 1 -type d 2>/dev/null | wc -l | tr -d ' ')
+    if [[ "$BACKUP_COUNT" -gt "$KEEP" ]]; then
+      REMOVE_COUNT=$((BACKUP_COUNT - KEEP))
+      echo "🧹 Cleaning up old backups (keeping $KEEP, removing $REMOVE_COUNT)..."
+      find "$DIR/backups" -mindepth 1 -maxdepth 1 -type d | sort | head -n "$REMOVE_COUNT" | while read -r old_backup; do
+        rm -rf "$old_backup"
+        echo "   Removed: $(basename "$old_backup")"
+      done
+    fi
     ;;
 
   uninstall)

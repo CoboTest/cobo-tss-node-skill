@@ -4,6 +4,25 @@ All notable changes to this project will be documented in this file.
 
 Format follows [Keep a Changelog](https://keepachangelog.com/).
 
+## [0.4.0] - 2026-02-27
+
+### Added
+- Checksum verification (SHA256SUMS) in `install.sh` — verifies binary integrity after download
+- YAML config validation in `node-ctl.sh health` — checks config file is parseable
+- Backup auto-cleanup with `--keep=N` (default: 10 most recent)
+- `loginctl enable-linger` detection in `install-service.sh` and `health` check
+- `test` environment support in `env-common.sh` — isolated service name for testing
+- Test suite: 33+ tests with real systemd/launchd, platform-specific, auto-cleanup
+- GitHub Actions CI: runs on both ubuntu-latest and macos-latest
+- CI status badge in README
+
+### Fixed
+- `ProtectHome=false` in systemd service (was `read-only`, conflicted with `ReadWritePaths`)
+- Added `backups/` to `ReadWritePaths` in systemd service
+- `setup-keyfile.sh`: `--force` flag for non-interactive overwrite, `-t 0` TTY detection
+- `SHA256SUMS` now includes dotfiles (`.password`) in backups
+- `node-ctl.sh health`: no longer crashes when service is not installed
+
 ## [0.3.1] - 2026-02-26
 
 ### Fixed
@@ -44,6 +63,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/).
 - `SKILL.md` with full CLI reference, configuration guide, troubleshooting, and maintenance schedule
 - README in English and Chinese with agent chat examples
 
+[0.4.0]: https://github.com/CoboTest/cobo-tss-node-skill/compare/v0.3.1...v0.4.0
 [0.3.1]: https://github.com/CoboTest/cobo-tss-node-skill/compare/v0.3.0...v0.3.1
 [0.3.0]: https://github.com/CoboTest/cobo-tss-node-skill/compare/v0.1.0...v0.3.0
 [0.1.0]: https://github.com/CoboTest/cobo-tss-node-skill/releases/tag/v0.1.0

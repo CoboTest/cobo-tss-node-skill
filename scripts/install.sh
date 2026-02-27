@@ -64,6 +64,28 @@ if ! curl -fsSL "$DOWNLOAD_URL" -o "$TMPDIR/$ASSET_NAME" 2>/dev/null; then
   exit 1
 fi
 
+# Verify checksum if SHA256SUMS available
+CHECKSUM_URL="https://github.com/$REPO/releases/download/$VERSION/SHA256SUMS"
+if curl -fsSL "$CHECKSUM_URL" -o "$TMPDIR/SHA256SUMS" 2>/dev/null; then
+  echo "🔒 Verifying checksum..."
+  EXPECTED=$(grep "$ASSET_NAME" "$TMPDIR/SHA256SUMS" | awk '{print $1}')
+  if [[ -n "$EXPECTED" ]]; then
+    ACTUAL=$(sha256sum "$TMPDIR/$ASSET_NAME" 2>/dev/null | awk '{print $1}' || shasum -a 256 "$TMPDIR/$ASSET_NAME" | awk '{print $1}')
+    if [[ "$ACTUAL" == "$EXPECTED" ]]; then
+      echo "✅ Checksum verified"
+    else
+      echo "❌ Checksum mismatch!"
+      echo "   Expected: $EXPECTED"
+      echo "   Got:      $ACTUAL"
+      exit 1
+    fi
+  else
+    echo "⚠️  Asset not found in SHA256SUMS, skipping verification"
+  fi
+else
+  echo "ℹ️  No SHA256SUMS available, skipping checksum verification"
+fi
+
 # Extract
 echo "📂 Extracting..."
 tar xzf "$TMPDIR/$ASSET_NAME" -C "$TMPDIR"

@@ -1,5 +1,7 @@
 # cobo-tss-node-skill
 
+[![Tests](https://github.com/CoboTest/cobo-tss-node-skill/actions/workflows/test.yml/badge.svg)](https://github.com/CoboTest/cobo-tss-node-skill/actions/workflows/test.yml)
+
 🔐 AI agent skill for managing a [Cobo TSS Node](https://www.cobo.com/mpc-wallet) — the client-side MPC threshold signing component for Cobo's co-managed custody.
 
 Works with any AI agent framework that supports skill/plugin systems (OpenClaw, Claude Code, Codex, etc.)
